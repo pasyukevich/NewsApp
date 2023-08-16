@@ -1,0 +1,31 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - stage
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '17'
+
+      - name: Cache Yarn dependencies
+        uses: c-hive/gha-yarn-cache@v1
+
+      - name: Install node modules
+        run: |
+          yarn install
+
+      - name: Run test
+        run: |
+          yarn test
