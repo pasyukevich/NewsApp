@@ -1,0 +1,75 @@
+name: Package Version Control
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  version-control:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '17'
+
+      - name: Get PR labels
+        id: pr-labels
+        run: |
+          labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
+          echo "::set-output name=labels::$labels"
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Bump version
+        run: |
+          LABELS="${{ steps.pr-labels.outputs.labels }}"
+          if [[ "$LABELS" == *"[major]"* ]]; then
+            yarn version --major -m "Bump version to %s"
+          elif [[ "$LABELS" == *"[minor]"* ]]; then
+            yarn version --minor -m "Bump version to %s"
+          elif [[ "$LABELS" == *"[patch]"* ]]; then
+            yarn version --patch -m "Bump version to %s"
+          fi
+
+      - name: Push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git push
+
+      - name: Create Release
+        id: create_release
+        uses: gh-actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: New release of the package.
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./path/to/your/package.tar.gz
+          asset_name: package.tar.gz
+          asset_content_type: application/gzip
