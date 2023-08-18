@@ -15,25 +15,28 @@ const ArticleDetailsScreen = ({route}: ArticleDetailsProps) => {
   const {article} = route.params;
 
   return (
-    <ScrollView>
+    <ScrollView testID="ArticleDetailsScreen">
       <VStack space={4} p={5}>
         <Image
-          source={{uri: article.urlToImage}}
+          source={{uri: article.media}}
           alt={article.title}
           height={250}
           width="100%"
+          accessibilityIgnoresInvertColors={true}
         />
         <Heading size="lg">{article.title}</Heading>
         <Text color="gray.500" mb={4}>
-          Published on {new Date(article.publishedAt).toLocaleDateString()}
+          Published on {new Date(article.published_date).toLocaleDateString()}
         </Text>
-        <Text>{article.content}</Text>
-        <Link mt={4} href={article.url} isExternal>
-          Read more...
+        <Text>{article.summary}</Text>
+        <Link mt={4} href={article.link} isExternal>
+          <Text>Read more...</Text>
         </Link>
       </VStack>
     </ScrollView>
   );
 };
+
+ArticleDetailsScreen.displayName = 'ArticleDetailsScreen';
 
 export default ArticleDetailsScreen;
