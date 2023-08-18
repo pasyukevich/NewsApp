@@ -20,8 +20,11 @@ const SplashScreen = ({navigation}) => {
         // Navigate to your main app screen (or any other action you want) after the animation finishes
         navigation.replace('Home');
       }}
+      testID="SplashScreen"
     />
   );
 };
+
+SplashScreen.displayName = 'SplashScreen';
 
 export default SplashScreen;

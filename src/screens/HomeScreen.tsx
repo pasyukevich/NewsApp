@@ -37,6 +37,7 @@ const HomeScreen = ({navigation}) => {
               roundedTop="lg"
               height={200}
               width="100"
+              accessibilityIgnoresInvertColors={true}
             />
             <Heading size="md" mt={2}>
               {article.title}
@@ -47,8 +48,11 @@ const HomeScreen = ({navigation}) => {
       )}
       onEndReached={loadNews} // Load more news when the end of the list is reached
       onEndReachedThreshold={0.5} // Trigger the load more when the user is halfway through the last item
+      testID="HomeScreen"
     />
   );
 };
+
+HomeScreen.displayName = 'HomeScreen';
 
 export default HomeScreen;
