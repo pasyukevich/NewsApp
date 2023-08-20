@@ -2,12 +2,20 @@ import React, {useState, useEffect, useCallback} from 'react';
 import {FlatList, Pressable} from 'react-native';
 import {Box, Text, Image, Heading} from 'native-base';
 import {BASE_URL} from 'react-native-dotenv';
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  withDecay,
+} from 'react-native-reanimated';
 import {fetchNews} from '../services/newsApi';
 import {NewsArticle} from '../types/news';
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const HomeScreen = ({navigation}) => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [page, setPage] = useState(1); // For pagination
+  const scrollY = useSharedValue(0);
 
   const loadNews = useCallback(async () => {
     try {
@@ -23,10 +31,22 @@ const HomeScreen = ({navigation}) => {
     loadNews();
   }, [loadNews]);
 
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: event => {
+      scrollY.value = event.contentOffset.y;
+    },
+    onEndDrag: event => {
+      scrollY.value = withDecay({
+        velocity: event.velocity?.y,
+        clamp: [0, 100], // Adjust the clamp values based on your content height
+      });
+    },
+  });
+
   return (
-    <FlatList
+    <AnimatedFlatList
       data={articles}
-      keyExtractor={(item, index) => index.toString()}
+      keyExtractor={(_item, index) => index.toString()}
       renderItem={({item: article}) => (
         <Pressable
           accessibilityRole="button"
@@ -52,6 +72,7 @@ const HomeScreen = ({navigation}) => {
       onEndReached={loadNews} // Load more news when the end of the list is reached
       onEndReachedThreshold={0.5} // Trigger the load more when the user is halfway through the last item
       testID="HomeScreen"
+      onScroll={scrollHandler}
     />
   );
 };
