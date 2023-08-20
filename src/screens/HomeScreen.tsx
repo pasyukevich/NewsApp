@@ -1,8 +1,9 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {FlatList, Pressable} from 'react-native';
 import {Box, Text, Image, Heading} from 'native-base';
+import {BASE_URL} from 'react-native-dotenv';
 import {fetchNews} from '../services/newsApi';
-import {NewsArticle} from '../types';
+import {NewsArticle} from '../types/news';
 
 const HomeScreen = ({navigation}) => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -10,7 +11,7 @@ const HomeScreen = ({navigation}) => {
 
   const loadNews = useCallback(async () => {
     try {
-      const news = await fetchNews('us', page);
+      const news = await fetchNews(page);
       setArticles(prevArticles => [...prevArticles, ...news]);
       setPage(prevPage => prevPage + 1);
     } catch (error) {
@@ -31,18 +32,20 @@ const HomeScreen = ({navigation}) => {
           accessibilityRole="button"
           onPress={() => navigation.navigate('ArticleDetails', {article})}>
           <Box bg="white" shadow={2} rounded="lg" p={4}>
-            <Image
-              source={{uri: article.media}}
-              alt={article.title}
-              roundedTop="lg"
-              height={200}
-              width="100"
-              accessibilityIgnoresInvertColors={true}
-            />
+            {article.multimedia[0]?.url && (
+              <Image
+                source={{uri: `${BASE_URL}/${article.multimedia[0]?.url}`}}
+                alt="image base"
+                roundedTop="lg"
+                height={400}
+                width="600"
+                accessibilityIgnoresInvertColors={true}
+              />
+            )}
             <Heading size="md" mt={2}>
-              {article.title}
+              {article.abstract}
             </Heading>
-            <Text mt={2}>{article.excerpt}</Text>
+            <Text mt={2}>{article.lead_paragraph}</Text>
           </Box>
         </Pressable>
       )}

@@ -1,19 +1,16 @@
 import axios from 'axios';
-import {API_URL, API_KEY} from '@env';
+import {API_URL, API_KEY} from 'react-native-dotenv';
 
-export const fetchNews = async (country: string = 'us', page: number = 1) => {
+export const fetchNews = async (page: number = 1) => {
   try {
     const response = await axios.get(API_URL, {
-      headers: {
-        'X-Api-Key': API_KEY,
-      },
       params: {
-        countries: country,
+        'api-key': API_KEY,
         page,
-        topic: 'food',
       },
     });
-    return response.data.articles;
+
+    return response.data.response.docs;
   } catch (error) {
     console.error('Error fetching news:', error);
     throw error;
